@@ -1,11 +1,11 @@
 const express = require('express');
 const server = express();
-const bodyparser = require('body-parser');
 
 const airlines = require('./mocks/airlines_mock.json');
 const airports = require('./mocks/airports_mock.json');
 
-server.use(bodyparser.json());
+server.use(express.urlencoded());
+server.use(express.json());
 
 server.get('/', function (req, res) {
   return res.status(200).send(`
