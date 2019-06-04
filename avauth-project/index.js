@@ -1,11 +1,81 @@
 const express = require('express');
+const axios = require('axios');
 const server = express();
+// Mongo DB Client
+const MongoClient = require('mongodb').MongoClient;
 
 const airlines = require('./mocks/airlines_mock.json');
 const airports = require('./mocks/airports_mock.json');
+const clients = require('./mocks/clients_mock.json');
 
 server.use(express.urlencoded());
 server.use(express.json());
+
+// Connection URL
+const url = 'mongodb://localhost:27017';
+// Database Name
+const dbName = 'AvAuthDataSet';
+
+// Use connect method to connect to the server
+async function mongoDb() {
+  var options = {
+    useNewUrlParser: true
+  };
+  
+  const client = await MongoClient.connect(url, options);
+  return client;
+}
+
+/*
+
+- Entran datos nuevos a la base de datos de vuelos
+- avauth revisa que haya datos nuevos
+- avauth obtiene las apis registradas
+- valida los datos a enviar
+-- Bucle
+  - envia los datos a cada api registrada
+  - actualiza los registros
+
+*/
+
+// const checkTimer = setInterval(function () {
+  const client = mongoDb();
+
+  client
+    .then(async function (mongoclient) {
+      const flightsCollection = mongoclient.db(dbName).collection('flights');
+      const flightsCount = await flightsCollection.countDocuments();
+      // Filtrar en el find por registros que no tengan timestamp
+      const flights = await flightsCollection.find().toArray();
+
+      console.log(flights);
+      // Valido los datos y filtro antes de enviarlos
+      
+      // Les agrego el timestam a los registros y los actualizo
+      
+      // Luego se los envio a todos los clientes
+      clients.forEach(function (client) {
+        axios
+          .post(client['service-url'], flights)
+          .then(function (response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      });
+      
+      if (client.close) {
+        client.close();
+      }
+    })
+    .catch(function (error) {
+      if (client.close) {
+        client.close();
+      }
+      console.log(error);
+    });
+// }, 3000);
 
 server.get('/', function (req, res) {
   return res.status(200).send(`

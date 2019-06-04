@@ -1,5 +1,5 @@
 [{
   "appid": "1",
   "appname": "FlightDataMD",
-  "service-url": "http://localhost:5001/api/process-flight-data"
+  "service-url": "http://localhost:5001/process-flight-data"
 }]

@@ -2,7 +2,6 @@ const express = require('express');
 const server = express();
 // Mongo DB Client
 const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
 const iServiceInterface = require('./interfaces/service-interface.model');
 
 // Connection URL
@@ -29,15 +28,25 @@ server.post('/service-interface-registry', async function (req, res) {
   const client = await mongoDb();
   const collection = client.db("FlightDataMW").collection('service-interface');
   
-  collection.insertOne(null)
+  collection.insertOne(data)
     .then(function (success) {
       client.close();
-      return res.status(200).send('ok');
+      return res.status(200).send({ status: 'success' });
     })
     .catch(function (error) {
       client.close();
-      return res.status(500).send('error');
+      return res.status(500).send({ status: 'error', error: error });
     });
+});
+
+server.post('/process-flight-data', function (req, res) {
+  // Validamos los datos
+  console.log(req.body);
+  // Obtenemos las interfaces registradas
+  // Para cada interfaz registrada
+    // Validamos los triggers
+    // Segun los triggers los datos que envio
+  return res.status(200).send({ status: 'success' });
 });
 
 server.listen(5001, function () {
