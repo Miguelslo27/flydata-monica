@@ -3,6 +3,9 @@ const MongoClient = require('mongodb').MongoClient;
 const config = require('./config.json');
 const getEmptyFilter = require('./utils');
 const axios = require('axios');
+const airlines = require('./mocks/airlines_mock.json');
+const airports = require('./mocks/airports_mock.json');
+const clients = require('./mocks/clients_mock.json');
 
 // Connection URL
 const url = 'mongodb://localhost:27017';
@@ -23,9 +26,6 @@ let page = config.OFFSET / config.LOTS_SIZE;
 let offset = config.OFFSET;
 
 module.exports = function processLot() {
-  console.log("Page", page);
-  console.log("config.MAX_LOTS", config.MAX_LOTS);
-
   if (page == config.MAX_LOTS) {
     return;
   }
@@ -36,11 +36,7 @@ module.exports = function processLot() {
     .then(async function (mongoclient) {
       const flightsCollection = mongoclient.db(dbName).collection('flights');
       const flightsCount = await flightsCollection.countDocuments();
-
-      console.log(flightsCount);
-
-      // Filtrar en el find por registros que no tengan timestamp
-      const flights = await flightsCollection.find(getEmptyFilter({
+      let filters = getEmptyFilter({
         YEAR: '$and',
         MONTH: '$and',
         DAY: '$and',
@@ -63,11 +59,27 @@ module.exports = function processLot() {
         TAXI_IN: '$and',
         SCHEDULED_ARRIVAL: '$and',
         ARRIVAL_TIME: '$and'
-      })).skip(offset).limit(config.LOTS_SIZE).toArray();
+      });
 
       // Valido los datos y filtro antes de enviarlos
+      // Filtrar en el find por registros que no tengan timestamp
+      const flights = await flightsCollection.find(filters).skip(offset).limit(config.LOTS_SIZE).toArray();
 
+      flights.map(flight => {
+        let airline = airlines.find(airline => airline.IATA_CODE == flight.AIRLINE);
+        let origin_airport = airports.find(airport => airport.IATA_CODE == flight.ORIGIN_AIRPORT);
+        let destination_airport = airports.find(airport => airport.IATA_CODE == flight.DESTINATION_AIRPORT);
+
+        flight.AIRLINE = airline;
+        flight.ORIGIN_AIRPORT = origin_airport;
+        flight.DESTINATION_AIRPORT = destination_airport;
+      });
+
+      
       // Les agrego el timestamp a los registros y los actualizo
+      // flightsCollection.updateMany(filters, {
+      //   'UPDATED': new Date().getTime()
+      // });
 
       // Luego se los envio a todos los clientes
       // clients.forEach(function (client) {

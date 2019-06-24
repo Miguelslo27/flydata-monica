@@ -80,7 +80,7 @@ server.get('/airlines/:id', function (req, res) {
   if (!airline) {
     return res.status(404).send({ status: 'error', message: 'Airline not found' });
   }
-  
+
   return res.status(200).send(airline);
 });
 
