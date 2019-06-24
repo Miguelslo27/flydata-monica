@@ -1,6 +1,6 @@
 {
-  "frequency": "5000",
-  "max-lots": "100",
-  "lots-size": "100",
-  "offset": 0
+  "FREQUENCY": 1000,
+  "MAX_LOTS": 5,
+  "LOTS_SIZE": 10,
+  "OFFSET": 0
 }

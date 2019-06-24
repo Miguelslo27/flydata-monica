@@ -1,11 +1,45 @@
 const express = require('express');
 const server = express();
+const processLot = require('./processLot');
+
+// Mongo DB Client
+const MongoClient = require('mongodb').MongoClient;
 
 const airlines = require('./mocks/airlines_mock.json');
 const airports = require('./mocks/airports_mock.json');
+const clients = require('./mocks/clients_mock.json');
 
 server.use(express.urlencoded());
 server.use(express.json());
+
+// Connection URL
+const url = 'mongodb://localhost:27017';
+// Database Name
+const dbName = 'AvAuthDataSet';
+
+// Use connect method to connect to the server
+async function mongoDb() {
+  var options = {
+    useNewUrlParser: true
+  };
+
+  const client = await MongoClient.connect(url, options);
+  return client;
+}
+
+/*
+
+- Entran datos nuevos a la base de datos de vuelos
+- avauth revisa que haya datos nuevos
+- avauth obtiene las apis registradas
+- valida los datos a enviar
+-- Bucle
+  - envia los datos a cada api registrada
+  - actualiza los registros
+
+*/
+
+processLot();
 
 server.get('/', function (req, res) {
   return res.status(200).send(`
