@@ -1,5 +1,6 @@
 const express = require('express');
-const axios = require('axios');
+// const axios = require('axios');
+const redis = require('redis');
 const server = express();
 // Mongo DB Client
 const MongoClient = require('mongodb').MongoClient;
@@ -62,7 +63,7 @@ function processLot() {
   const orEmptyFilter = {
     $or: emptyFilter
   };
-  
+
   client
     .then(async function (mongoclient) {
       const flightsCollection = mongoclient.db(dbName).collection('flights');
@@ -95,7 +96,6 @@ function processLot() {
         ARRIVAL_DELAY: norEmptyFilter,
         DIVERTED: norEmptyFilter,
         CANCELLED: norEmptyFilter,
-        // CANCELLATION_REASON: norEmptyFilter,
         AIR_SYSTEM_DELAY: norEmptyFilter,
         SECURITY_DELAY: norEmptyFilter,
         AIRLINE_DELAY: norEmptyFilter,
@@ -174,29 +174,59 @@ server.get('/airports', function (req, res) {
 });
 
 server.get('/airlines/:id', function (req, res) {
-  const airlineIdRequest = req.params.id;
-  const airline = airlines.find(function (airline) {
-    return airline.IATA_CODE == airlineIdRequest;
+  const airlineIdRequest = req.param.id;
+
+  redis.get(airlineIdRequest, function (error, reply) {
+    if (error) {
+      throw error;
+    }
+
+    if (reply) {
+      console.log("RESPONSE WITH REDIS");
+      return res.status(200).send(JSON.parse(reply));
+    }
+
+    const airline = airlines.find(airline => airline.IATA_CODE == airlineIdRequest);
+
+    if (!airline) {
+      return res.status(404).send({ status: 'error', message: 'Airline not found' });
+    }
+
+    redis.set(airlineIdRequest, JSON.stringify(airline), error => {
+      throw error;
+    });
+
+    console.log("RESPONSE WITHOUT REDIS");
+    return res.status(200).send(airline);
   });
-
-  if (!airline) {
-    return res.status(404).send({ status: 'error', message: 'Airline not found' });
-  }
-
-  return res.status(200).send(airline);
 });
 
 server.get('/airports/:id', function (req, res) {
-  const airportIdRequest = req.params.id;
-  const airport = airports.find(function (airport) {
-    return airport.IATA_CODE == airportIdRequest;
+  const airportIdRequest = req.param.id;
+
+  redis.get(airportIdRequest, function (error, reply) {
+    if (error) {
+      throw error;
+    }
+
+    if (reply) {
+      console.log("RESPONSE WITH REDIS");
+      return res.status(200).send(JSON.parse(reply));
+    }
+
+    const airport = airports.find(airport => airport.IATA_CODE == airportIdRequest);
+
+    if (!airport) {
+      return res.status(404).send({ status: 'error', message: 'Airport not found' });
+    }
+
+    redis.set(airportIdRequest, JSON.stringify(airport), error => {
+      throw error;
+    });
+
+    console.log("RESPONSE WITHOUT REDIS");
+    return res.status(200).send(airport);
   });
-
-  if (!airport) {
-    return res.status(404).send({ status: 'error', message: 'Airport not found' });
-  }
-
-  return res.status(200).send(airport);
 });
 
 server.listen(5000, function () {

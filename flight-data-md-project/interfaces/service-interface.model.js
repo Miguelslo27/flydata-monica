@@ -1,4 +1,4 @@
-class iServiceInterface {
+class ServiceInterface {
   constructor(service) {
     this.client_id = service.client_id;
     this.client_app_name = service.clien_app_name;
@@ -11,4 +11,4 @@ class iServiceInterface {
   }
 }
 
-module.exports = iServiceInterface;
+module.exports = ServiceInterface;
