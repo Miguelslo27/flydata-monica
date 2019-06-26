@@ -47,8 +47,9 @@ server.post('/process-flight-data', function (req, res) {
   // Para cada interfaz registrada
     // Validamos los triggers
     // Segun los triggers los datos que envio
-      // Filtros
+    // Filtros
       // Transformaciones
+      
 
   return res.status(200).send({ status: 'success' });
 });
