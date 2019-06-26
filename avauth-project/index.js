@@ -1,5 +1,7 @@
 const express = require('express');
-const axios = require('axios');
+// const axios = require('axios');
+const redisClient = require('redis');
+const redis = redisClient.createClient();
 const server = express();
 const processLot = require('./processLot');
 // Mongo DB Client
@@ -73,28 +75,62 @@ server.get('/airports', function (req, res) {
 
 server.get('/airlines/:id', function (req, res) {
   const airlineIdRequest = req.params.id;
-  const airline = airlines.find(function (airline) {
-    return airline.IATA_CODE == airlineIdRequest;
+
+  redis.get(airlineIdRequest, function (error, reply) {
+    if (error) {
+      throw error;
+    }
+
+    if (reply) {
+      console.log("RESPONSE WITH REDIS");
+      return res.status(200).send(JSON.parse(reply));
+    }
+
+    const airline = airlines.find(airline => airline.IATA_CODE == airlineIdRequest);
+
+    if (!airline) {
+      return res.status(404).send({ status: 'error', message: 'Airline not found' });
+    }
+
+    redis.set(airlineIdRequest, JSON.stringify(airline), error => {
+      if (error) {
+        throw error;
+      }
+    });
+
+    console.log("RESPONSE WITHOUT REDIS");
+    return res.status(200).send(airline);
   });
-
-  if (!airline) {
-    return res.status(404).send({ status: 'error', message: 'Airline not found' });
-  }
-
-  return res.status(200).send(airline);
 });
 
 server.get('/airports/:id', function (req, res) {
   const airportIdRequest = req.params.id;
-  const airport = airports.find(function (airport) {
-    return airport.IATA_CODE == airportIdRequest;
+
+  redis.get(airportIdRequest, function (error, reply) {
+    if (error) {
+      throw error;
+    }
+
+    if (reply) {
+      console.log("RESPONSE WITH REDIS");
+      return res.status(200).send(JSON.parse(reply));
+    }
+
+    const airport = airports.find(airport => airport.IATA_CODE == airportIdRequest);
+
+    if (!airport) {
+      return res.status(404).send({ status: 'error', message: 'Airport not found' });
+    }
+
+    redis.set(airportIdRequest, JSON.stringify(airport), error => {
+      if (error) {
+        throw error;
+      }
+    });
+
+    console.log("RESPONSE WITHOUT REDIS");
+    return res.status(200).send(airport);
   });
-
-  if (!airport) {
-    return res.status(404).send({ status: 'error', message: 'Airport not found' });
-  }
-
-  return res.status(200).send(airport);
 });
 
 server.listen(5000, function () {

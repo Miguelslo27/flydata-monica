@@ -2,7 +2,7 @@ const express = require('express');
 const server = express();
 // Mongo DB Client
 const MongoClient = require('mongodb').MongoClient;
-const iServiceInterface = require('./interfaces/service-interface.model');
+const ServiceInterface = require('./interfaces/service-interface.model');
 
 // Connection URL
 const url = 'mongodb://localhost:27017';
@@ -24,7 +24,7 @@ server.get('/', function(req, res) {
 });
 
 server.post('/service-interface-registry', async function (req, res) {
-  const data = new iServiceInterface(req.body);
+  const data = new ServiceInterface(req.body);
   const client = await mongoDb();
   const collection = client.db("FlightDataMW").collection('service-interface');
 
@@ -43,9 +43,14 @@ server.post('/process-flight-data', function (req, res) {
   // Validamos los datos
   console.log(req.body);
   // Obtenemos las interfaces registradas
+
   // Para cada interfaz registrada
     // Validamos los triggers
     // Segun los triggers los datos que envio
+    // Filtros
+      // Transformaciones
+      
+
   return res.status(200).send({ status: 'success' });
 });
 
