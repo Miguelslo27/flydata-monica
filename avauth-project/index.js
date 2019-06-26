@@ -1,7 +1,7 @@
 const express = require('express');
+const axios = require('axios');
 const server = express();
 const processLot = require('./processLot');
-
 // Mongo DB Client
 const MongoClient = require('mongodb').MongoClient;
 
