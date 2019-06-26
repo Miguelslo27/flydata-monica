@@ -27,7 +27,7 @@ server.post('/service-interface-registry', async function (req, res) {
   const data = new ServiceInterface(req.body);
   const client = await mongoDb();
   const collection = client.db("FlightDataMW").collection('service-interface');
-  
+
   collection.insertOne(data)
     .then(function (success) {
       client.close();
