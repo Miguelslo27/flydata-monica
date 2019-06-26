@@ -1,6 +1,7 @@
 const express = require('express');
 // const axios = require('axios');
-const redis = require('redis');
+const redisClient = require('redis');
+const redis = redisClient.createClient();
 const server = express();
 const processLot = require('./processLot');
 // Mongo DB Client
@@ -73,7 +74,7 @@ server.get('/airports', function (req, res) {
 });
 
 server.get('/airlines/:id', function (req, res) {
-  const airlineIdRequest = req.param.id;
+  const airlineIdRequest = req.params.id;
 
   redis.get(airlineIdRequest, function (error, reply) {
     if (error) {
@@ -92,7 +93,9 @@ server.get('/airlines/:id', function (req, res) {
     }
 
     redis.set(airlineIdRequest, JSON.stringify(airline), error => {
-      throw error;
+      if (error) {
+        throw error;
+      }
     });
 
     console.log("RESPONSE WITHOUT REDIS");
@@ -101,7 +104,7 @@ server.get('/airlines/:id', function (req, res) {
 });
 
 server.get('/airports/:id', function (req, res) {
-  const airportIdRequest = req.param.id;
+  const airportIdRequest = req.params.id;
 
   redis.get(airportIdRequest, function (error, reply) {
     if (error) {
@@ -120,7 +123,9 @@ server.get('/airports/:id', function (req, res) {
     }
 
     redis.set(airportIdRequest, JSON.stringify(airport), error => {
-      throw error;
+      if (error) {
+        throw error;
+      }
     });
 
     console.log("RESPONSE WITHOUT REDIS");
